@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+# codenexus 代码知识图谱 CLI 索引库（工具产物，不入 git）
+.codenexus/
+# Specmark/openspec 临时产物（specmark/ 全局规则30强制不入 git）
+openspec/
+specmark/
+logs/
+.claude/

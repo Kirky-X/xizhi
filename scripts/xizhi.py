@@ -411,8 +411,7 @@ def cmd_search(args):
         return _search_iconify(args)
     names = build_names(args.set, args.refresh)
     if args.set == "harmonyos":
-        _search_harmonyos(args, names)
-        return 0
+        return _search_harmonyos(args, names)
     if names is None:
         return 0
     q = args.query.lower()

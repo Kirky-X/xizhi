@@ -8,13 +8,16 @@ English | [中文](README.md)
 
 ## ✨ Features
 
-- **Deterministic 21-set routing table** (licenses individually verified, tracking 2026 changes: RemixIcon new license commercial-OK, css.gg new license excluded): HarmonyOS→`sys.symbol`, shadcn/Tailwind→lucide, Material→Material Symbols, Microsoft→Fluent, animated→lordicon/morphicons… table-driven routing, no free-styling (deterministic logic stays in lookup tables, not the model)
-- **Anti-hallucination name search**: lucide dual name+tag index (resolves renames like `home`→`house`); **HarmonyOS dual-source index** — official catalog of 579 icons (with Chinese names/unicode) + offline SDK full list of 2,761 names, works without network
-- **Scripted auto-download**: one CLI for all sets, dual jsDelivr / raw.githubusercontent channels, all verified 200 on 2026-09; variant flags are appended to filenames to prevent overwrites
+- **Deterministic 21-set routing table** (licenses individually verified, tracking 2026 changes: RemixIcon new license commercial-OK, css.gg new license excluded): HarmonyOS→`sys.symbol`, shadcn/Tailwind→lucide, Material→Material Symbols, Microsoft→Fluent, animated→lordicon/morphicons… table-driven routing, no free-styling (deterministic logic stays in lookup tables, not the model); `suggest` subcommand reads project reality (package.json/pubspec.yaml/react-icons usage) to align with existing dependencies
+- **Anti-hallucination name search**: lucide dual name+tag index (resolves renames like `home`→`house` with a `matched as` note); **synonym-group expansion** (simplified/traditional Chinese & English aliases via curated lookup, e.g. `铃铛`→`bell`, strictly suite-scoped — never rewrites names across sets); close-name candidates + direct-URL verification on miss; **HarmonyOS dual-source index** — official catalog of 579 icons (with Chinese names/unicode) + offline SDK full list of 2,761 names, works without network
+- **Batch download & provenance**: comma-separated multi-name fetch (Iconify merged endpoint with automatic alias unpacking; per-item stats, one failure never aborts the batch); `--sprite` packs a `<symbol>` sheet; `--version` pins reproducible downloads; every SVG carries provenance + license headers; `--format data-uri` / `--color` output adapters (opt-in, root-tag-only rewrite — never global)
+- **Supply-chain safety**: deterministic blocklist scan before writing any SVG (`<script`/event handlers/`javascript:`/external refs) — hits refuse to land and abort the batch; iconify search results from non-first-party prefixes carry a review warning
 - **HarmonyOS full pipeline**: in-code `SymbolGlyph($r('sys.symbol.*'))` with zero downloads; SVG needs served by the reverse-engineered official channel — `name_map_new.json` catalog + `HMSymbol.ttf` variable font (wght 40-900, 4,837 glyphs), rendered via fontTools with the same pipeline as the website's frontend fontkit
+- **Multi-stack delivery**: `sync` subcommand generates react/solid/vue/svelte components (idempotent markers, returns import statements); mechanical checklists for Flutter/Android/RN in `references/mobile-native.md`
+- **Channel health checks**: `doctor` subcommand probes every registry channel with short timeouts; `.github/workflows/health.yml` runs it weekly in CI and auto-files an issue on failure — breakage is discovered proactively, not on first user failure
 - **Animated icon options**: lordicon (Lottie JSON via CDN) + morphicons (spring-physics morphing library for stroke icons)
-- **Zero pip dependencies**: pure Python stdlib (urllib), cross-platform; 7-day local cache for name indexes, `--refresh` to force
-- **Explicit failures**: invalid variants / 404 / broken channels / HTML soft-200 all error out with exit 1 — never silent
+- **Zero pip dependencies**: pure Python stdlib (urllib), cross-platform; 7-day local cache for name indexes, `--refresh` to force; usable as a standalone CLI by humans without an agent
+- **Explicit failures**: invalid variants / 404 / broken channels / HTML soft-200 / poisoned SVGs all error out with exit 1 — never silent (pinned by 140+ offline tests)
 
 ```mermaid
 flowchart TD
@@ -66,12 +69,20 @@ python3 {SKILL_DIR}/scripts/xizhi.py describe --set material-symbols
 python3 {SKILL_DIR}/scripts/xizhi.py search --set lucide --query home        # tag hits renamed house
 python3 {SKILL_DIR}/scripts/xizhi.py search --set harmonyos --query bell     # official: bell · unicode F01D5
 
-# 3. Download (optional variants, auto-appended to filename)
+# 3. Download (optional variants auto-appended to filename; comma batches; provenance + license headers)
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house --out ./assets/icons
+python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house,bell,compass --out ./assets/icons   # batch
+python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house,bell --sprite --out ./assets/icons  # sprite sheet
+python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house --version 0.511.0                   # pinned version
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set material-symbols --name home --style outlined --size 48 --fill _fill1
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lordicon --name lupuorrc    # Lottie JSON
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set harmonyos --name house --wght 700 --out ./assets/icons  # official font rendered SVG
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set iconify --name icon-park-outline:home --out ./assets/icons # aggregate fallback
+
+# 4. Engineering (as needed)
+python3 {SKILL_DIR}/scripts/xizhi.py suggest                                                # recommend sets from project reality
+python3 {SKILL_DIR}/scripts/xizhi.py sync --framework react --set lucide --name house       # generate components
+python3 {SKILL_DIR}/scripts/xizhi.py doctor                                                 # channel health check
 ```
 
 HarmonyOS code references system built-ins directly (no download needed):
@@ -89,11 +100,15 @@ All data verified via real network tests on 2026-09-14:
 - Error paths: invalid variant / 404 / no match all exit 1 explicitly ✓
 - HarmonyOS channel reverse-engineered and verified: website SPA (`hm-symbol.js`) → data files `name_map_new.json` (579 icons) + `HMSymbol.ttf` (4,837 glyphs, 579/579 unicode hits; covers 2,746/2,761 of the SDK list); SVG rendered by fontTools from the font (same pipeline as the site's frontend fontkit)
 - Anti-hallucination effectiveness: `gear`/`settings` absent from the HarmonyOS list (correct name `gearshape`); SDK list extracted from [webabcd/HarmonyDemo IconDemo.ets](https://github.com/webabcd/HarmonyDemo/blob/main/entry/src/main/ets/pages/resource/IconDemo.ets)
+- **2026-10 benchmark enhancements** (batch fetch / provenance / safety scan / doctor / suggest / sync — 11 recommendations): pinned by 140 offline tests (`python3 -m pytest tests -q`); the Iconify merged endpoint and `home→house` alias behavior re-verified against api.iconify.design; channel availability continuously monitored by the weekly doctor CI
 
 ```bash
+# Offline test suite
+python3 -m pytest tests -q
 # Regression (networked environment)
 python3 scripts/xizhi.py sets && python3 scripts/xizhi.py search --set harmonyos --query house
 python3 scripts/xizhi.py fetch --set lucide --name house --out /tmp/icons
+python3 scripts/xizhi.py doctor
 ```
 
 ## 📁 Layout
@@ -101,14 +116,19 @@ python3 scripts/xizhi.py fetch --set lucide --name house --out /tmp/icons
 ```
 xizhi/
 ├── SKILL.md                       # Entry: routing table + 3-step workflow
-├── scripts/xizhi.py               # Unified CLI (sets/search/fetch/describe)
+├── scripts/xizhi.py               # Unified CLI (sets/search/fetch/doctor/sync/suggest/describe)
 ├── data/harmonyos-symbols.txt     # Offline list of 2,761 sys.symbol names
+├── .github/workflows/
+│   ├── release.yml                # tag-triggered packaging & release
+│   └── health.yml                 # weekly channel doctor (auto-issue on failure)
 └── references/
     ├── lucide.md                  # Integration, rename history, CDN
     ├── harmonyos-symbol.md        # SymbolGlyph usage & 3 name-lookup channels
     ├── lordicon.md                # Animated icons: player/trigger/id workflow
     ├── morphicons.md              # Morph animation: framework entries/stroke constraint
-    └── official-web.md            # Material/Fluent/Heroicons/Tabler/Phosphor/Bootstrap/AntD/feather
+    ├── official-web.md            # Material/Fluent/Heroicons/Tabler/Phosphor/Bootstrap/AntD/feather etc.
+    ├── iconify.md                 # Aggregate fallback: batch endpoint/local fallback/license risks
+    └── mobile-native.md           # Flutter/Android/RN multi-stack delivery checklists
 ```
 
 ## 📜 License

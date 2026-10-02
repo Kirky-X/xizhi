@@ -77,6 +77,19 @@
 - AntD/蚂蚁系中后台；outlined/filled/twotone
 - React 用 `@ant-design/icons`（`<HomeOutlined />`）；组件名 = PascalCase + 风格后缀
 
+## 一键落地（sync 子命令）
+
+Web 框架不必手抄 SVG：`sync` 按框架模板生成组件文件（幂等标记，重跑覆盖更新，回传 import 语句）：
+
+```bash
+python3 {SKILL_DIR}/scripts/xizhi.py sync --framework react --set lucide --name house --out ./components/xizhi
+python3 {SKILL_DIR}/scripts/xizhi.py sync --framework vue --set tabler --name home --style outline --out ./components/xizhi
+```
+
+- react/solid：JSX 属性显式映射（`class→className`、`stroke-width→strokeWidth`…），**属性值一律不动**，未映射属性原样保留
+- vue/svelte：原样包裹（连字符属性原生支持）
+- 鸿蒙之外的移动端（Flutter / Android / React Native）→ `mobile-native.md`
+
 ## 选型兜底规则
 
 1. 项目已锁设计系统（MUI/Fluent/AntD/Bootstrap）→ 跟系统自带图标走

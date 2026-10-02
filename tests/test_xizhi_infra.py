@@ -27,8 +27,8 @@ class _FakeResp:
         self.status = status
         self._p = payload
 
-    def read(self):
-        return self._p
+    def read(self, size=-1):  # size 参数对齐 http_get 的 max_bytes 读取上限
+        return self._p if size < 0 else self._p[:size]
 
     def __enter__(self):
         return self

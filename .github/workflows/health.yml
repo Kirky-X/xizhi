@@ -1,0 +1,37 @@
+# 每周通道巡检（P2）：注册表内 fetch/index/鸿蒙/批量端点全量短探针。
+# 通道失效从「用户 fetch 失败才暴露」变为「主动发现」；失败自动开告警 issue。
+name: health
+
+on:
+  schedule:
+    - cron: "17 3 * * 1" # 每周一 03:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: health
+  cancel-in-progress: false
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2（SHA 钉版防 mutable tag 投毒）
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0（SHA 钉版）
+      - name: 巡检全部通道（doctor）
+        id: doctor
+        continue-on-error: true
+        run: set -o pipefail && python3 scripts/xizhi.py doctor | tee doctor-output.txt
+      - name: 失败开告警 issue
+        if: steps.doctor.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "doctor: 通道巡检失败（$(date -u +%F)）" \
+            --body-file doctor-output.txt \
+            --repo "$GITHUB_REPOSITORY"
+          exit 1 # 保持工作流红，便于是 Actions 徽章/通知可见

@@ -169,5 +169,137 @@ class TestIconifySearchOfflineGuard(unittest.TestCase):
         self.assertTrue(m.called)
 
 
+class TestAliasExpansion(unittest.TestCase):
+    """P4：ALIAS_GROUPS 同义词组（确定性查表）——只扩查询词，绝不跨套件改写名称。"""
+
+    NAMES = ["bell", "house", "cabin"]
+
+    def _run(self, query, names=None, set_id="lucide"):
+        with mock.patch.object(xizhi, "build_names", return_value=list(names or self.NAMES)), \
+                mock.patch("sys.stdout", new_callable=__import__("io").StringIO) as out:
+            rc = xizhi.cmd_search(SimpleNamespace(set=set_id, query=query,
+                                                  limit=30, refresh=False))
+        return rc, out.getvalue()
+
+    def test_expand_query_terms(self):
+        terms = xizhi.expand_query("铃铛")
+        self.assertEqual(terms[0], "铃铛")  # 原词恒在最前
+        self.assertIn("bell", terms)
+        self.assertIn("鈴鐺", terms)  # 繁体覆盖
+
+    def test_unmatched_query_returns_single_term(self):
+        self.assertEqual(xizhi.expand_query("zzz"), ["zzz"])
+
+    def test_alias_hit_via_expansion(self):
+        rc, out = self._run("鈴鐺")  # 索引只有 bell，经同义词组命中
+        self.assertEqual(rc, 0)
+        self.assertIn("bell", out)
+        self.assertIn("别名", out)
+
+    def test_direct_hits_rank_before_alias_hits(self):
+        rc, out = self._run("bell", names=["bell", "alarm"])
+        self.assertEqual(rc, 0)
+        first = [l for l in out.splitlines() if l.startswith("  ")][0]
+        self.assertIn("bell", first)
+
+    def test_alias_scope_never_rewrites_names(self):
+        # 套件作用域纪律（Aria-Icons 全局别名致 404 的反例）：扩词只加查询，不改原词
+        self.assertEqual(xizhi.expand_query("home")[0], "home")
+        rc, out = self._run("home", names=["home"], set_id="tabler")
+        self.assertEqual(rc, 0)
+        self.assertNotIn("house", out)  # 索引没有就不出现改写名
+
+
+class TestMissCandidates(unittest.TestCase):
+    """P4：miss 前给近似名候选；P8：miss 附自取证直链。"""
+
+    NAMES = ["home", "house", "horse", "cabin"]
+
+    def _run(self, query, set_id="lucide"):
+        with mock.patch.object(xizhi, "build_names", return_value=list(self.NAMES)), \
+                mock.patch("sys.stdout", new_callable=__import__("io").StringIO) as out:
+            rc = xizhi.cmd_search(SimpleNamespace(set=set_id, query=query,
+                                                  limit=30, refresh=False))
+        return rc, out.getvalue()
+
+    def test_close_matches_on_miss(self):
+        rc, out = self._run("hose")  # 拼写近似 house
+        self.assertEqual(rc, 1)
+        self.assertIn("[miss]", out)
+        self.assertIn("近似", out)
+        self.assertIn("house", out)
+
+    def test_miss_direct_url_hint(self):
+        rc, out = self._run("zzz-none", set_id="lucide")
+        self.assertEqual(rc, 1)
+        self.assertIn("lucide-static@latest/icons/zzz-none.svg", out)  # 模板拼出的直链
+
+
+class TestHitFooter(unittest.TestCase):
+    """P8 matched as 溯源标注 + P1 批量下载提示。"""
+
+    def _run(self, query, names):
+        with mock.patch.object(xizhi, "build_names", return_value=names), \
+                mock.patch("sys.stdout", new_callable=__import__("io").StringIO) as out:
+            rc = xizhi.cmd_search(SimpleNamespace(set="lucide", query=query,
+                                                  limit=30, refresh=False))
+        return rc, out.getvalue()
+
+    def test_matched_as_on_tag_hit(self):
+        rc, out = self._run("home", ["house\thome", "cabin"])
+        self.assertEqual(rc, 0)
+        self.assertIn("matched as", out)
+        self.assertIn("house", out)
+        self.assertIn("tag=home", out)  # 原有 tag 标注保留
+
+    def test_batch_hint_on_hit(self):
+        rc, out = self._run("home", ["home", "homesmith"])
+        self.assertEqual(rc, 0)
+        self.assertIn("批量", out)
+
+
+class TestIconifyThirdPartyWarning(unittest.TestCase):
+    """P7：iconify 兜底搜索中非一等收录的 prefix 附第三方上游警示。"""
+
+    def test_third_party_prefix_flagged(self):
+        search_payload = json.dumps({"icons": ["lucide:house", "someobs:thing"]}).encode()
+        col_payload = json.dumps({"collections": {
+            "lucide": {"license": {"title": "ISC"}},
+            "someobs": {"license": {"title": "MIT"}}}}).encode()
+        args = SimpleNamespace(set="iconify", query="house", limit=5, refresh=False)
+        with mock.patch.object(xizhi, "http_get",
+                               side_effect=[search_payload, col_payload]), \
+                mock.patch("sys.stdout", new_callable=__import__("io").StringIO) as out:
+            rc = xizhi.cmd_search(args)
+        self.assertEqual(rc, 0)
+        outv = out.getvalue()
+        self.assertIn("someobs", outv)
+        self.assertIn("一等收录", outv)  # 警示指向非收录套件
+
+
+class TestHarmonyosAliasSearch(unittest.TestCase):
+    """P4：鸿蒙繁体/别称经同义词组命中官方目录中文名。"""
+
+    def setUp(self):
+        self._old_cache = xizhi.CACHE_DIR
+        xizhi.CACHE_DIR = Path(tempfile.mkdtemp(prefix="xizhi-hm-alias-"))
+        (xizhi.CACHE_DIR / "harmonyos-name-map.json").write_text(json.dumps({
+            "data": {"alerts": [{"name": "bell", "name_cn": "铃铛", "unicode": "f01d5",
+                                 "support_version": "5.0.0", "category": "alerts"}]}
+        }, ensure_ascii=False), encoding="utf-8")
+
+    def tearDown(self):
+        xizhi.CACHE_DIR = self._old_cache
+
+    def test_traditional_chinese_hits_official_entry(self):
+        args = SimpleNamespace(set="harmonyos", query="鈴鐺", limit=30, refresh=False)
+        with mock.patch.object(xizhi, "http_get",
+                               side_effect=AssertionError("缓存新鲜时不允许联网")), \
+                mock.patch("sys.stdout", new_callable=__import__("io").StringIO) as out:
+            rc = xizhi.cmd_search(args)
+        self.assertEqual(rc, 0)
+        self.assertIn("bell", out.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

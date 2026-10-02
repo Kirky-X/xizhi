@@ -1,8 +1,8 @@
 {
   "name": "xizhi",
-  "description": "Icon asset routing skill: pick the right official icon set (21 first-class, licenses verified; Iconify 200k aggregate fallback) and fetch icons automatically. Trigger: 图标/icon/图标库/icon library/icon set/选图标/找图标/下载图标/icon 下载/SVG 图标/lucide/lucide-react/SymbolGlyph/sys.symbol/鸿蒙图标/HarmonyOS icon/lordicon/动效图标/animated icon/morphicons/图标变形/Material Symbols/Fluent icon/Heroicons/Tabler/Phosphor/Bootstrap Icons/AntD icons/feather icons/icon CDN. Covers set selection by project context (HarmonyOS→sys.symbol, shadcn/Tailwind→lucide, Material→Material Symbols, Microsoft→Fluent), offline icon-name search (anti-hallucination), and scripted download of individual SVG/Lottie assets. Boundary: icon image generation→wudaozi; design system tokens→maliang; HarmonyOS syntax/engineering→hap-dev.",
+  "description": "Icon asset routing skill: pick the right official icon set (21 first-class, licenses verified; Iconify 200k aggregate fallback) and fetch icons automatically. Trigger: 图标/icon/图标库/icon library/icon set/选图标/找图标/下载图标/icon 下载/SVG 图标/lucide/lucide-react/SymbolGlyph/sys.symbol/鸿蒙图标/HarmonyOS icon/lordicon/动效图标/animated icon/morphicons/图标变形/Material Symbols/Fluent icon/Heroicons/Tabler/Phosphor/Bootstrap Icons/AntD icons/feather icons/icon CDN. Covers set selection by project context (HarmonyOS→sys.symbol, shadcn/Tailwind→lucide, Material→Material Symbols, Microsoft→Fluent), offline icon-name search with synonym groups (anti-hallucination), batch SVG/Lottie download (comma multi-name, Iconify merged endpoint, sprite), version pinning with provenance/license headers, component generation (react/vue/svelte/solid), and channel health checks (doctor). Boundary: icon image generation→wudaozi; design system tokens→maliang; HarmonyOS syntax/engineering→hap-dev.",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Kirky-X",
   "repo": "https://github.com/Kirky-X/xizhi",
   "homepage": "https://github.com/Kirky-X/xizhi",

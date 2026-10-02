@@ -1,0 +1,25 @@
+{
+  "skill": "xizhi",
+  "queries": [
+    {"q": "帮我找几个合适的图标用在导航栏上", "expect": "trigger"},
+    {"q": "下载 lucide 的 home、search、settings 三个图标", "expect": "trigger"},
+    {"q": "鸿蒙项目里时钟图标该用哪个 SymbolGlyph", "expect": "trigger"},
+    {"q": "shadcn 项目配哪套图标库比较搭", "expect": "trigger"},
+    {"q": "下载一批 SVG 图标，要带来源和许可头", "expect": "trigger"},
+    {"q": "有没有动效图标库推荐，要能做加载动画的", "expect": "trigger"},
+    {"q": "把这 10 个 Material Symbols 图标批量下载打包成 sprite", "expect": "trigger"},
+    {"q": "帮我搜一下有没有表示数据同步含义的图标名", "expect": "trigger"},
+    {"q": "React 项目里 lucide-react 图标组件帮我生成一下", "expect": "trigger"},
+    {"q": "微软风格的后台管理系统选哪套官方图标集", "expect": "trigger"},
+    {"q": "@element-plus/icons-vue 图标怎么引入使用", "expect": "no", "owner": "element-dev"},
+    {"q": "el-table 操作列里的图标怎么按条件显示", "expect": "no", "owner": "element-dev"},
+    {"q": "Flutter 里怎么自定义 IconButton 的图标样式", "expect": "no", "owner": "flutter-dev"},
+    {"q": "ArkTS 里 Image 组件怎么加载本地图片资源", "expect": "no", "owner": "hap-dev"},
+    {"q": "sys.symbol 这个图标在 ArkUI 代码里怎么写", "expect": "no", "owner": "hap-dev"},
+    {"q": "AI 画一个赛博朋克风格的音乐 App 图标", "expect": "no", "owner": "wudaozi"},
+    {"q": "把这张 logo 图片转成各尺寸 favicon", "expect": "no", "owner": "wudaozi"},
+    {"q": "设计系统的色彩 token 帮我提取一下", "expect": "no", "owner": "maliang"},
+    {"q": "帮我写个正则从 HTML 里抽取所有图片链接", "expect": "no", "owner": "none"},
+    {"q": "推荐几个免费的高清图库网站", "expect": "no", "owner": "external"}
+  ]
+}

@@ -123,6 +123,21 @@ class TestVariantDefaults(FetchCase):
         self.assertIn("home_fill1_24px.svg", urls[0])
         self.assertEqual([p.name for p in out_dir.iterdir()], ["home_fill1.svg"])
 
+    def test_material_symbols_grad_axis(self):
+        # 禁止遗留：报告⑤ GRAD/opsz 缺口——grad 轴落地（目录列表实测 gradN25/grad200）
+        rc, urls, out_dir, _, errv = self._fetch("material-symbols", "home", grad="grad200")
+        self.assertEqual(rc, 0)
+        self.assertIn("home_grad200_24px.svg", urls[0])
+        self.assertIn("home_grad200.svg", [p.name for p in out_dir.iterdir()])
+        # 组合轴无下划线拼接（上游命名 home_grad200fill1_24px），本地名保持下划线风格
+        rc, urls, out_dir, _, errv = self._fetch("material-symbols", "home",
+                                                 grad="grad200", fill="fill1")
+        self.assertIn("home_grad200fill1_24px.svg", urls[0])
+        self.assertIn("home_grad200_fill1.svg", [p.name for p in out_dir.iterdir()])
+        # legacy "_fill1" 归一放行
+        rc, urls, out_dir, _, errv = self._fetch("material-symbols", "home", fill="_fill1")
+        self.assertIn("home_fill1_24px.svg", urls[0])
+
     def test_heroicons_default_and_custom_variant(self):
         rc, urls, out_dir, _, errv = self._fetch("heroicons", "home")
         self.assertIn("/optimized/24/outline/home.svg", urls[0])

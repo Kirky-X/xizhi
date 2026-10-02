@@ -6,7 +6,7 @@
 
 | set | 官方 | 许可 | fetch 示例 |
 |---|---|---|---|
-| material-symbols | Google | Apache-2.0 | `fetch --set material-symbols --name home [--style rounded\|outlined\|sharp] [--size 20\|24\|40\|48] [--fill _fill1]` |
+| material-symbols | Google | Apache-2.0 | `fetch --set material-symbols --name home [--style rounded\|outlined\|sharp] [--size 20\|24\|40\|48] [--grad gradN25\|grad200] [--fill fill1]` |
 | fluent | Microsoft | MIT | `fetch --set fluent --name home_24_regular` |
 | heroicons | Tailwind Labs | MIT | `fetch --set heroicons --name home [--variant 24/outline\|24/solid\|20/solid\|16/solid]` |
 | tabler | Tabler | MIT | `fetch --set tabler --name home [--style outline\|filled]` |
@@ -33,6 +33,8 @@
 ## Material Symbols（Google 官方）
 
 - **可变字体四轴**：FILL（0/1 线↔面）、wght（100-700）、GRAD（-25/0/200）、opsz（20/24/40/48）——网页用 Google Fonts CSS 引字体，SVG 场景用本脚本
+- **静态 SVG 轴规则**（2026-10 目录列表实测，`symbols/web/<名>/materialsymbols<风格>/` 共 168 文件/图标）：轴按 **wght→grad→fill 顺序无下划线拼接**（`home_wght700grad200fill1_24px.svg`），单轴保留名称下划线（`home_fill1_24px.svg`）；可用值 wght=100/200/300/500/600/700、grad=gradN25/grad200、fill=fill1
+- **xizhi 暴露范围**：`--grad gradN25|grad200` 与 `--fill fill1`（legacy `--fill _fill1` 仍放行）；**opsz 是可变字体轴，静态 SVG 通道不存在**（需 opsz 走 iconify 兜底或 Google Fonts 管线）；`--wght` 未暴露（与 harmonyos 可变字重旗标共用名，上游 wght 静态文件可手拼 URL 或走 iconify）
 - 命名 snake_case：`home`、`arrow_back`、`search`
 - 名称索引 = 官方 codepoints（`search --set material-symbols` 自动拉取缓存）
 - 字体引入：

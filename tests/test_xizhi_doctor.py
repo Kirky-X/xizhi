@@ -148,7 +148,8 @@ class TestGateFixes(unittest.TestCase):
         self.assertIn("house-fill.svg", by["phosphor fetch[weight=fill]"])  # 上游 2.1.1 命名
         self.assertIn("iconoir fetch[style=solid]", by)
         self.assertIn("adobe-after-effects", by["iconoir fetch[style=solid]"])  # solid 只有品牌图标
-        self.assertIn("material-symbols fetch[fill=_fill1]", by)
+        self.assertIn("material-symbols fetch[fill=fill1]", by)
+        self.assertNotIn("material-symbols fetch[fill=_fill1]", by)  # legacy 归一后按 URL 去重
 
     def test_run_probes_preserves_order_under_parallelism(self):
         probes = [{"label": f"p{i}", "url": f"https://x/{i}"} for i in range(20)]

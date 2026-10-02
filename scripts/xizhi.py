@@ -61,10 +61,11 @@ SETS = {
         "license": "Apache-2.0",
         "when": "Material Design 系统 / Android / Google 生态",
         "fetch": ("https://raw.githubusercontent.com/google/material-design-icons/master/"
-                  "symbols/web/{name}/materialsymbols{style}/{name}{fill}_{size}px.svg"),
-        "defaults": {"style": "rounded", "size": "24", "fill": ""},
+                  "symbols/web/{name}/materialsymbols{style}/{name}{axes}_{size}px.svg"),
+        "defaults": {"style": "rounded", "size": "24", "grad": "", "fill": ""},
         "choices": {"style": ["outlined", "rounded", "sharp"], "size": ["20", "24", "40", "48"],
-                    "fill": ["", "_fill1"]},
+                    "grad": ["", "gradN25", "grad200"], "fill": ["", "fill1", "_fill1"]},
+        "axes": ["grad", "fill"],  # 上游命名：轴按此序无下划线拼接（home_grad200fill1_24px，2026-10 目录实测）
         "ext": ".svg",
         "index": {"kind": "url-plain",
                   "url": ("https://raw.githubusercontent.com/google/material-design-icons/master/"
@@ -298,7 +299,7 @@ def http_get(url: str, binary: bool = False, timeout: int = 30,
     响应超 max_bytes 显性拒绝（防异常上游撑爆内存或拖挂批量）。"""
     req = urllib.request.Request(url, headers=UA)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310 nosemgrep -- scheme/host 均来自 https 注册表模板；file:// 重定向经实测被 stdlib 拒绝
             if resp.status != 200:
                 raise SystemExit(f"[error] HTTP {resp.status}: {url}")
             data = resp.read(max_bytes + 1)
@@ -321,9 +322,21 @@ def emit(msg: str):
     print(msg, file=sys.stderr)
 
 
+def parse_json(text: str, what: str):
+    """JSON 解析统一显性失败：上游返回非法 JSON 时报解析错误而非裸 traceback。"""
+    try:
+        return json.loads(text)
+    except ValueError as e:
+        raise SystemExit(f"[error] {what} 返回非法 JSON（{e}）")
+
+
 def npm_latest(pkg: str) -> str:
     url = f"https://registry.npmjs.org/{urllib.request.quote(pkg, safe='@/')}"
-    return json.loads(http_get(url))["dist-tags"]["latest"]
+    data = parse_json(http_get(url), f"npm registry({pkg})")
+    try:
+        return data["dist-tags"]["latest"]
+    except (TypeError, KeyError) as e:
+        raise SystemExit(f"[error] npm registry 响应异常（{e}）：{pkg}")
 
 
 def cache_path(key: str) -> Path:
@@ -426,6 +439,12 @@ def _build_fetch_url(set_id: str, s: dict, name: str, args, version: str) -> tup
         if val and val != s.get("defaults", {}).get(var, ""):
             variant_parts.append(val.strip("_").replace("/", "-"))
         url = url.replace("{%s}" % var, val)
+    if s.get("axes"):  # 组合轴：有轴时补名称下划线，轴间无下划线（home_grad200fill1_24px）
+        axes = "".join(
+            (getattr(args, v.replace("/", "_").replace("-", "_"), None)
+             or s.get("defaults", {}).get(v, "") or "").strip("_")
+            for v in s["axes"])
+        url = url.replace("{axes}", f"_{axes}" if axes else "")
     url = re.sub(r"\{(?!name\})\w+\}", "", url).replace("{name}", url_name)
     stem = label + ("_" + "_".join(variant_parts) if variant_parts else "")
     return url, stem
@@ -509,13 +528,25 @@ def harmonyos_official(refresh: bool) -> list[dict] | None:
     if refresh or not cp.exists() or time.time() - cp.stat().st_mtime > CACHE_TTL:
         url = SETS["harmonyos"]["channels"]["name_map"]
         try:
-            data = json.loads(http_get(url))
-            cp.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+            text = http_get(url)
         except SystemExit:
             if not cp.exists():
                 emit("[warn] 官方目录下载失败且无缓存，降级离线 SDK 清单（无中文名/unicode）")
                 return None
-    parsed = json.loads(cp.read_text(encoding="utf-8"))
+        else:
+            try:
+                data = parse_json(text, "官方目录")
+                if not isinstance(data, dict) or not isinstance(data.get("data"), dict):
+                    raise ValueError("响应缺 data 字段")
+            except (SystemExit, ValueError) as e:
+                # 毒化/畸形响应拒绝写入缓存（安全复审观察①：不能污染后靠 --refresh 手清）
+                emit(f"[warn] 官方目录响应异常（{e}），拒绝写入缓存")
+                if not cp.exists():
+                    emit("[warn] 无可用缓存，降级离线 SDK 清单（无中文名/unicode）")
+                    return None
+            else:
+                cp.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    parsed = parse_json(cp.read_text(encoding="utf-8"), "官方目录缓存")
     if not isinstance(parsed, dict) or not isinstance(parsed.get("data"), dict):
         raise SystemExit("[error] 官方目录缓存格式异常（缺 data 字段），--refresh 刷新后重试")
     return parsed["data"]
@@ -536,7 +567,7 @@ def build_names(set_id: str, refresh: bool) -> list[str] | None:
         lines = http_get(idx["url"]).splitlines()
         return [l.split()[0] for l in lines if l.strip()]
     if kind == "url-json-lucide":  # {"house": ["home", ...]} 名称+tag 双索引
-        tags = json.loads(http_get(idx["url"]))
+        tags = parse_json(http_get(idx["url"]), "lucide tags 索引")
 
         def build():
             out = []
@@ -554,7 +585,7 @@ def build_names(set_id: str, refresh: bool) -> list[str] | None:
                 base = f"https://data.jsdelivr.com/v1/package/gh/{idx['gh']}/flat"
             else:
                 base = f"https://data.jsdelivr.com/v1/package/npm/{pkg}@{npm_latest(pkg)}/flat"
-            data = json.loads(http_get(base, timeout=60))
+            data = parse_json(http_get(base, timeout=60), f"jsdelivr flat({pkg})")
             names = [f["name"][len(sub):][:-len(suffix)]
                      for f in data.get("files", [])
                      if f["name"].startswith(sub) and f["name"].endswith(suffix)]
@@ -726,8 +757,8 @@ def _search_harmonyos(args, sdk_names):
 def _search_iconify(args) -> int:
     """跨 150+ 套件聚合搜索；逐套件附许可元数据（iconify 快照可能滞后，以官方仓库为准）。"""
     q = urllib.parse.quote(args.query)
-    data = json.loads(http_get(
-        f"https://api.iconify.design/search?query={q}&limit={args.limit}"))
+    data = parse_json(http_get(
+        f"https://api.iconify.design/search?query={q}&limit={args.limit}"), "iconify 搜索")
     if not isinstance(data, dict):
         raise SystemExit("[error] iconify 搜索返回非对象（上游异常），稍后重试或按 references/iconify.md 直查")
     icons = data.get("icons") or []
@@ -741,8 +772,9 @@ def _search_iconify(args) -> int:
             prefixes.append(p)
     lic = {}
     try:
-        col = json.loads(http_get(
-            "https://api.iconify.design/collections?prefixes=" + ",".join(prefixes)))
+        col = parse_json(http_get(
+            "https://api.iconify.design/collections?prefixes=" + ",".join(prefixes)),
+            "iconify collections")
         # ?prefixes= 响应按 prefix 直接作键；无参数版才嵌在 collections 字段下
         infos = col.get("collections") if isinstance(col, dict) and isinstance(col.get("collections"), dict) else {}
         for p, info in infos.items():
@@ -935,7 +967,7 @@ def scan_svg(data: bytes) -> list[str]:
     try:
         once = _html.unescape(stripped.decode("latin-1")).encode("latin-1", errors="replace")
         hays += [once, _html.unescape(once.decode("latin-1")).encode("latin-1", errors="replace")]
-    except Exception:  # latin-1 往返不会失败；防御性兜底，绝不让安全检查自身崩溃
+    except Exception:  # nosec B110 nosemgrep -- latin-1 往返不会失败；防御性兜底，安全检查绝不自身崩溃
         pass
     hits: list[str] = []
     for hay in hays:
@@ -1128,7 +1160,7 @@ def _fetch_iconify_batch(args, names: list[str]) -> int:
         url = f"https://api.iconify.design/{prefix}.json?icons=" + ",".join(icons)
         data = None
         try:
-            data = json.loads(http_get(url))
+            data = parse_json(http_get(url), f"iconify 合并端点({prefix})")
             if not isinstance(data, dict):  # 未知 prefix 会返回裸文本 "404"
                 emit(f"[warn] 合并端点返回非对象（{str(data)[:40]}），逐个尝试本地兜底 …")
                 data = None
@@ -1303,7 +1335,9 @@ def build_probe_list(set_filter: str | None = None) -> list[dict]:
         if sid in PROBE_ICONS:
             probes.append({"label": f"{sid} fetch", "url": probe_url(sid, PROBE_ICONS[sid]),
                            "timeout": 10})
-            # 变体探针（架构审查教训：phosphor 非默认字重通道死链而默认探针假绿）
+            # 变体探针（架构审查教训：phosphor 非默认字重通道死链而默认探针假绿）；
+            # legacy 归一 choice（如 fill 的 "_fill1"/"fill1"）URL 相同，按 URL 去重
+            seen_urls = {probes[-1]["url"]}
             for var, choices in (s.get("choices") or {}).items():
                 d = (s.get("defaults") or {}).get(var)
                 for val in choices:
@@ -1311,8 +1345,11 @@ def build_probe_list(set_filter: str | None = None) -> list[dict]:
                         continue
                     key = f"{var}={val}"
                     icon = PROBE_VARIANT_ICONS.get((sid, key), PROBE_ICONS[sid])
-                    probes.append({"label": f"{sid} fetch[{key}]", "timeout": 10,
-                                   "url": probe_url(sid, icon, {var: val})})
+                    url = probe_url(sid, icon, {var: val})
+                    if url in seen_urls:
+                        continue
+                    seen_urls.add(url)
+                    probes.append({"label": f"{sid} fetch[{key}]", "timeout": 10, "url": url})
         kind = s["index"]["kind"]
         if kind in ("url-plain", "url-json-lucide"):
             probes.append({"label": f"{sid} index", "url": s["index"]["url"], "timeout": 10})
@@ -1345,16 +1382,18 @@ def _probe_url(url: str, timeout: int = 10, light: bool = False):
         return
     try:
         req = urllib.request.Request(url, headers=UA, method="HEAD")
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310 nosemgrep -- 探针 URL 全部来自注册表白名单
+
             if resp.status == 200:
                 return
     except SystemExit:
         raise
-    except Exception:
+    except Exception:  # nosec B110 nosemgrep -- HEAD 不被支持属正常回退路径，Range 失败仍显性退出
         pass  # HEAD 不被支持/网络层报错 → 回退 Range GET 再验一次
     try:
         req = urllib.request.Request(url, headers={**UA, "Range": "bytes=0-0"})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310 nosemgrep -- 同上，注册表白名单
+
             if resp.status in (200, 206):
                 return
             raise SystemExit(f"[error] HTTP {resp.status}: {url}")

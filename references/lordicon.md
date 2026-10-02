@@ -11,8 +11,8 @@
 ## 使用方式（Web Component，官方推荐）
 
 ```html
-<!-- 1. 播放器（jsDelivr 实测可用） -->
-<script src="https://cdn.jsdelivr.net/npm/@lordicon/element@2.3.1/lib/index.js"></script>
+<!-- 1. 播放器（jsDelivr 实测可用；⚠️ 播放器路径是 dist/ 不是 lib/，2026-10 实测 200） -->
+<script src="https://cdn.jsdelivr.net/npm/@lordicon/element@3.0.0/dist/index.js"></script>
 
 <!-- 2. 图标：trigger 控制播放时机 -->
 <lord-icon
@@ -51,3 +51,4 @@ agent 辅助流程：让用户在官网挑好给 id，或 WebFetch 图标页拿 
 2. 付费图标下载会带水印/受限——认准 Free 筛选
 3. `colors` 只影响图标里标记为 primary/secondary 的图层，不是所有图标都支持换色
 4. React 里可用 `@lordicon/react`（官方包），或直接用 web component
+5. 播放器包内路径为 `dist/index.js`（`lib/` 路径 404）；2.3.1 与 3.0.0 均实测 200，建议钉版

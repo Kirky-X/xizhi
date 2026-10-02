@@ -20,6 +20,7 @@ metadata:
 | 项目/场景 | 套件（set id） | 理由 |
 |---|---|---|
 | **HarmonyOS / ArkTS** | `harmonyos` | 代码内 `$r()` 引用零下载自动跟随主题；SVG/官方字体亦可脚本化下载（官方目录含中文名搜名） |
+| **iOS / macOS / watchOS 原生** | 系统 SF Symbols API（不设下载通道） | `Image(systemName:)` 零下载随系统分发，与鸿蒙 sys.symbol 同模式；Apple 许可明文禁止符号再分发/导出非 Apple 平台，无合法 fetch 通道；跨平台/Web 用 `lucide` 或 `phosphor`（见 references/mobile-native.md） |
 | Web 无设计系统约束 | `lucide` | 覆盖最广、风格统一，事实标准 |
 | shadcn/ui / 大多数 React+Tailwind 模板 | `lucide` | 已是默认依赖 |
 | Google / Material Design / Android | `material-symbols` | 官方配套，可变字体四轴 |
@@ -86,7 +87,7 @@ npm install lucide-react    # 包名速查：lucide-vue-next / lucide-svelte / l
 
 ```bash
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house --out ./assets/icons
-python3 {SKILL_DIR}/scripts/xizhi.py fetch --set material-symbols --name home --style outlined --size 48 --fill _fill1
+python3 {SKILL_DIR}/scripts/xizhi.py fetch --set material-symbols --name home --style outlined --size 48 --grad grad200 --fill fill1
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lordicon --name lupuorrc      # Lottie JSON
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set morphicons --name dom.js      # 变形库 vanilla ESM
 # 批量（逗号多值；iconify 自动走合并端点；逐条统计，任一失败 exit 1）

@@ -74,7 +74,7 @@ python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house --out ./ass
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house,bell,compass --out ./assets/icons   # 批量
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house,bell --sprite --out ./assets/icons  # 打 sprite
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lucide --name house --version 0.511.0                   # 钉版本
-python3 {SKILL_DIR}/scripts/xizhi.py fetch --set material-symbols --name home --style outlined --size 48 --fill _fill1
+python3 {SKILL_DIR}/scripts/xizhi.py fetch --set material-symbols --name home --style outlined --size 48 --grad grad200 --fill fill1
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set lordicon --name lupuorrc    # Lottie JSON
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set harmonyos --name house --wght 700 --out ./assets/icons  # 官方字体渲染 SVG
 python3 {SKILL_DIR}/scripts/xizhi.py fetch --set iconify --name icon-park-outline:home --out ./assets/icons # 聚合兜底

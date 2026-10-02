@@ -147,6 +147,23 @@ class TestHarmonyosOfficialCache(unittest.TestCase):
         self.assertEqual(first["cat"][0]["name_cn"], "猫")
         self.assertTrue((xizhi.CACHE_DIR / "harmonyos-name-map.json").is_file())
 
+    def test_poisoned_download_refused_not_cached(self):
+        # 安全复审观察①：畸形/毒化响应（合法 JSON 但缺 data）拒绝写入缓存并降级
+        def fake(url, binary=False, timeout=30):
+            return b'{"broken": true}'
+
+        with mock.patch.object(xizhi, "http_get", side_effect=fake), \
+                mock.patch("sys.stderr", new_callable=io.StringIO):
+            self.assertIsNone(xizhi.harmonyos_official(refresh=True))
+        self.assertFalse((xizhi.CACHE_DIR / "harmonyos-name-map.json").exists())
+
+    def test_invalid_json_download_degrades(self):
+        # 非法 JSON：显性降级（不裸 traceback、不写缓存）
+        with mock.patch.object(xizhi, "http_get", return_value=b"not json at all"), \
+                mock.patch("sys.stderr", new_callable=io.StringIO):
+            self.assertIsNone(xizhi.harmonyos_official(refresh=True))
+        self.assertFalse((xizhi.CACHE_DIR / "harmonyos-name-map.json").exists())
+
     def test_refresh_bypasses_cache(self):
         with mock.patch.object(xizhi, "http_get",
                                return_value=b'{"data": {}}') as m:

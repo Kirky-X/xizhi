@@ -4,6 +4,27 @@
 > 原则：**统一 SVG 输出（fetch 原始落盘 + 溯源头）→ 每栈一节机械变换 → 确定性校验命令**。
 > 不手改路径数据、不目测对齐；每栈只写可机械执行的规则。
 
+## 0.5 iOS / macOS 原生（SF Symbols——不设下载通道，2026-10 授权调研结论）
+
+与鸿蒙同构的"路线 A"：系统 API 直引零下载，xizhi 不设 fetch 通道。
+
+```swift
+// SwiftUI：变体随 .font 字重走，variableValue 控制渐变填充
+Image(systemName: "house").font(.system(size: 24, weight: .semibold))
+// UIKit
+UIImage(systemName: "house", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+```
+
+**许可三口径**（依据：Xcode and Apple SDKs Agreement §2.10，现行版本 EA2002，2026-10 实取全文；mock-up 口径出自 Apple Font 许可 EA1370/官方 FAQ 一侧）：
+
+1. Apple 平台 app 内使用：合法且唯一正路（系统按 SDK 协议授权，仅限为 Apple 品牌产品开发；符号嵌入 Apple 平台 app 分发是明文允许的）
+2. 设计工具 mock-up：仅限 Apple 平台软件界面，且需注册 Apple Developer
+3. **把符号导出/再分发到非 Apple 平台（Android/Web/跨平台设计稿）：明文禁止**（§2.10 禁的是脱离 Apple 平台开发用途的独立导出与再分发；且"实质性相似图像"不得入 app 图标/logo/商标）
+
+**镜像警示**：GitHub/npm 上的 SF Symbols SVG 导出库（如 sfsymbols-svg，6404 符号）**无 LICENSE**——工具包的 MIT/Apache 只覆盖代码不覆盖字形，一律不得引入本项目通道；公开镜像生态持续腐坏（sfsymbols.com 域名已易主、在线站 DNS 失效，Iconify 官方明确拒收录）。
+
+**跨平台路由**：同一语义 Web → `lucide`；Android → `material-symbols`；多端设计稿需多字重 → `phosphor`（六字重对位 SF 九字重）；RN iOS 侧可走系统桥（合法），Android 侧回退 Material。
+
 ## 0. 统一取图
 
 ```bash

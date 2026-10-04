@@ -1,5 +1,5 @@
 # HarmonyOS sys.symbol 图标名称清单（2761 个，SDK 资源表提取）
-# 补充：官方目录（579 图标，含中文名/unicode）与 HMSymbol.ttf 字体（4837 字形，wght 40-900）
+# 补充：官方目录（579 图标，含中文名/unicode）与 HMSymbol.ttf 字体（5705 字形，wght 40-900）
 #       均可脚本化下载，由 scripts/xizhi.py search/fetch --set harmonyos 自动缓存调用
 #   官方目录: https://developer.huawei.com/allianceCmsResource/resource/HUAWEI_Developer_VUE/template/resources/hm-symbol/name_map_new.json (2026-09-14 实测)
 #   符号字体: https://developer.huawei.com/allianceCmsResource/resource/HUAWEI_Developer_VUE/template/resources/hm-symbol/HMSymbol.ttf (2026-09-14 实测)

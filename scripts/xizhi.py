@@ -275,7 +275,7 @@ SETS = {
     },
     "harmonyos": {
         "label": "HarmonyOS Symbol",
-        "desc": "鸿蒙官方图标：代码内 $r 引用零下载；SVG/字体可脚本化下载（官方 name_map + HMSymbol.ttf，4837 字形实测）",
+        "desc": "鸿蒙官方图标：代码内 $r 引用零下载；SVG/字体可脚本化下载（官方 name_map + HMSymbol.ttf，5705 字形实测）",
         "license": "华为系统资源（随系统分发）",
         "when": "HarmonyOS/ArkTS 项目一律首选（自动跟随主题/深色模式）",
         "fetch": None,  # 专用通道：见 cmd_fetch harmonyos 分支（字体渲染 SVG）
@@ -807,7 +807,7 @@ def _fetch_harmonyos(args, ctx=None) -> int:
         data = http_get(SETS["harmonyos"]["channels"]["font"], binary=True, timeout=120)
         dest = _safe_dest(out_dir, "HMSymbol.ttf")
         dest.write_bytes(data)
-        print(f"[ok] {dest}  ({len(data)} bytes)  官方符号字体（可变轴 wght 40-900，4837 字形）")
+        print(f"[ok] {dest}  ({len(data)} bytes)  官方符号字体（可变轴 wght 40-900，5705 字形）")
         return 0
     try:
         from fontTools.ttLib import TTFont

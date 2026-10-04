@@ -32,7 +32,7 @@ Text() {
 | 资产 | URL（实测 200） | 内容 |
 |---|---|---|
 | 官方目录 | `https://developer.huawei.com/allianceCmsResource/resource/HUAWEI_Developer_VUE/template/resources/hm-symbol/name_map_new.json` | 579 图标：name/name_cn 中文名/unicode/support_version/category |
-| 符号字体 | 同目录 `HMSymbol.ttf`（4.2MB） | 可变字体 wght 40-900，4837 字形（含 SDK 全量 2761 名称 + 2091 扩展符号） |
+| 符号字体 | 同目录 `HMSymbol.ttf`（4.2MB） | 可变字体 wght 40-900；fontTools 实测 5705 字形（numGlyphs），cmap 码点映射 4839 项（SDK 清单 2761 名称中 2746 按字形名命中，2026-10-04 复测） |
 | 动画图层配置 | 同目录 `layer_config.json` | 官网动画参数（spring 曲线等）。⚠️ 不在 xizhi 脚本化通道内（SETS channels 仅 name_map+font），需要时用同目录 URL 直接 curl 获取 |
 
 ```bash

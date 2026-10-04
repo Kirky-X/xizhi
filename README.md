@@ -8,15 +8,15 @@
 
 ## ✨ 功能特性
 
-- **21 套件确定性选型表**（许可逐个核验，含 2026 许可变更追踪：RemixIcon 新许可商用 ✓、css.gg 新许可已排除）：HarmonyOS→`sys.symbol`、shadcn/Tailwind→lucide、Material→Material Symbols、Microsoft→Fluent、动效→lordicon/morphicons……查表路由，不让模型自由发挥（规则5：确定性逻辑禁止交给模型）；`suggest` 子命令读项目实况（package.json/pubspec.yaml/react-icons 用量）对齐现有依赖
-- **名称防幻觉**：lucide 名称+tag 双索引（自动命中 `home`→`house` 更名并标注 `matched as`）；**同义词组扩展**（简繁/中英别称查表命中，如 `铃铛`/`鈴鐺`→`bell`，套件内作用域绝不跨套件改名）；miss 时给近似名候选 + 直链核验；**鸿蒙双源索引**——官方目录 579 图标（含中文名/unicode）+ 离线 SDK 全量清单 2761 名称，无网可用
+- **21 套件确定性选型表**（许可逐个核验，含 2026 许可变更追踪：RemixIcon 新许可商用 ✓、css.gg 新许可已排除）：HarmonyOS→`sys.symbol`、shadcn/Tailwind→lucide、Material→Material Symbols、Microsoft→Fluent、动效→lordicon/morphicons……查表路由，不让模型自由发挥（规则7：确定性逻辑禁止交给模型）；`suggest` 子命令读项目实况（package.json/pubspec.yaml/react-icons 用量）对齐现有依赖（`--dir` 指定项目目录，默认当前目录）
+- **名称防幻觉**：lucide 名称+tag 双索引（旧名作为 tag 保留：搜 `home` 经 tag=home 命中 `house` 等图标，`matched as` 行标注首个 tag 命中名）；**同义词组扩展**（简繁/中英别称查表命中，如 `铃铛`/`鈴鐺`→`bell`，套件内作用域绝不跨套件改名）；miss 时给近似名候选 + 直链核验；**鸿蒙双源索引**——官方目录 579 图标（含中文名/unicode）+ 离线 SDK 全量清单 2761 名称，无网可用
 - **批量下载与产物溯源**：`--name` 逗号多值一次落地（iconify 走合并端点并自动解包别名，单条失败不中断批次，结尾显性统计）；`--sprite` 打 `<symbol>` 集合；`--version` 钉版本可复现；SVG 产物自带溯源 + 许可注释；`--format data-uri` / `--color` 输出适配（opt-in，仅根标签受控替换，绝不全局改写）
 - **供应链安全**：SVG 落盘前确定性黑名单扫描（`<script`/事件属性/`javascript:`/外部引用），命中拒绝并中止批次；iconify 第三方套件搜索结果附审阅警示
-- **鸿蒙全通路**：代码内 `SymbolGlyph($r('sys.symbol.*'))` 零下载直引；SVG 需求走逆向出的官方通道——`name_map_new.json` 目录 + `HMSymbol.ttf` 可变字体（wght 40-900，4837 字形），fontTools 渲染与官网前端 fontkit 同管线
-- **多栈落地**：`sync` 子命令生成 react/solid/vue/svelte 组件（幂等标记，返回 import 语句）；Flutter/Android/RN 机械变换清单见 `references/mobile-native.md`
+- **鸿蒙全通路**：代码内 `SymbolGlyph($r('sys.symbol.*'))` 零下载直引；SVG 需求走逆向出的官方通道——`name_map_new.json` 目录 + `HMSymbol.ttf` 可变字体（wght 40-900，fontTools 实测 5705 字形），fontTools 渲染与官网前端 fontkit 同管线
+- **多栈落地**：`sync` 子命令生成 react/solid/vue/svelte/svg 组件（幂等标记，返回 import 语句；`--version` 钉版本同 fetch）；Flutter/Android/RN 机械变换清单见 `references/mobile-native.md`
 - **通道健康巡检**：`doctor` 子命令短探针全量巡检注册表通道，`.github/workflows/health.yml` 每周 CI 自动跑、失败自动开 issue——通道失效主动发现而非用户 fetch 失败才暴露
 - **动效图标方案**：lordicon（Lottie JSON 直下 CDN）+ morphicons（弹簧物理变形动画库，吃 stroke 型图标）
-- **零 pip 依赖**：纯 Python 标准库（urllib），跨平台；名称索引 7 天本地缓存，`--refresh` 强制刷新；可脱离 agent 由人直接命令行使用
+- **零 pip 依赖**：纯 Python 标准库（urllib），跨平台；名称索引 7 天本地缓存（`XIZHI_CACHE` 可重定向缓存目录），`--refresh` 强制刷新；可脱离 agent 由人直接命令行使用
 - **失败显性化**：非法变体/404/通道失效/HTML 软 200/投毒 SVG 全部显式报错 exit 1，绝不静默（140+ 离线测试钉死）
 
 ```mermaid
@@ -37,7 +37,7 @@ flowchart TD
 | set | 套件 | 许可 | 定位 |
 | --- | ---- | ---- | ---- |
 | `harmonyos` | HarmonyOS Symbol | 随系统分发 | 鸿蒙首选；代码内零下载；SVG/字体可脚本化下载（官方目录含中文名） |
-| `lucide` | Lucide | ISC | Web 默认首选，1834 图标，shadcn/ui 默认 |
+| `lucide` | Lucide | ISC | Web 默认首选，1866 图标，shadcn/ui 默认 |
 | `remix` | Remix Icon | Remix Icon License v1.0 | 3200+，商用 ✓ 署名可选（2026-01 新许可，禁单独售卖） |
 | `mdi` | Material Design Icons (Pictogrammers) | Pictogrammers Free License | 社区单体最大 7400+，Apache-2.0 基底 |
 | `ionicons` | Ionicons (Ionic) | MIT | Ionic 官方，移动端气质 |
@@ -93,14 +93,14 @@ SymbolGlyph($r('sys.symbol.house')).fontSize(24).fontColor('#333')
 
 ## 🧪 测试与验证
 
-数据均为 2026-09-14 真实网络实测（规则32：禁止编造）：
+数据均为真实网络实测（2026-09-14 首测，2026-10-04 复测修订 lucide 图标数与鸿蒙字体字形数；规则13：禁止编造）：
 
 - 21 套件 × fetch 全量回归：全部下载/生成成功 ✓（含 harmonyos SVG 生成、字体直下与 iconify 聚合）
 - search 全套件：精确名/tag/前缀/包含四级排序 ✓（lucide `home`→`house`、fluent `home_24_regular`、bootstrap `house-door`、harmonyos 中文 `设置`→`gearshape`）
 - 错误路径：非法变体 / 404 / 无匹配显性 exit 1 ✓
-- 鸿蒙通道逆向实测：官网 SPA（`hm-symbol.js`）→ 数据文件 `name_map_new.json`（579 图标）+ `HMSymbol.ttf`（4837 字形，579/579 unicode 命中；覆盖 SDK 清单 2746/2761）；SVG 由 fontTools 从字体提取字形（与官网前端 fontkit 同管线）
+- 鸿蒙通道逆向实测：官网 SPA（`hm-symbol.js`）→ 数据文件 `name_map_new.json`（579 图标）+ `HMSymbol.ttf`（fontTools 实测 5705 字形、cmap 码点映射 4839 项，579/579 unicode 命中；覆盖 SDK 清单 2746/2761）；SVG 由 fontTools 从字体提取字形（与官网前端 fontkit 同管线）
 - 防幻觉有效性：`gear`/`settings` 不在鸿蒙清单（正确名 `gearshape`）；SDK 清单提取自 [webabcd/HarmonyDemo IconDemo.ets](https://github.com/webabcd/HarmonyDemo/blob/main/entry/src/main/ets/pages/resource/IconDemo.ets)
-- **2026-10 对标增强**（批量 fetch/版本溯源/安全扫描/doctor/suggest/sync 等 11 项建议）：140 个离线测试钉死（`python3 -m pytest tests -q`）；iconify 合并端点与 `home→house` 别名行为经 `api.iconify.design` 实测复验；通道可用性由每周 doctor CI 持续巡检
+- **2026-10 对标增强**（批量 fetch/版本溯源/安全扫描/doctor/suggest/sync 等 11 项建议）：149 个离线测试钉死（`python3 -m pytest tests -q`）；iconify 合并端点与 `home→house` 别名行为经 `api.iconify.design` 实测复验；通道可用性由每周 doctor CI 持续巡检
 
 ```bash
 # 离线测试套件
@@ -116,7 +116,12 @@ python3 scripts/xizhi.py doctor
 ```
 xizhi/
 ├── SKILL.md                       # 触发入口：选型表 + 三步工作流
-├── scripts/xizhi.py               # 统一 CLI（sets/search/fetch/doctor/sync/suggest/describe）
+├── skill.json                     # 技能清单（name/version/仓库元数据）
+├── scripts/
+│   ├── xizhi.py                   # 统一 CLI（sets/search/fetch/doctor/sync/suggest/describe）
+│   └── skill_lint.py              # skill 仓库工程基线体检（frontmatter/JSON 资产/文档-CLI 一致性）
+├── tests/                         # 离线测试套件（pytest）+ SKIPPED.md（在线路径未覆盖清单）
+├── triggers/trigger-queries.json  # 20 条触发回归查询（10 trigger / 10 no）
 ├── data/harmonyos-symbols.txt     # 2761 个 sys.symbol 离线名称清单
 ├── .github/workflows/
 │   ├── release.yml                # tag 触发打包发布

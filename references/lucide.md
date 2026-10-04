@@ -4,7 +4,7 @@
 
 ## 定位
 
-- 1500+（实测 1834）线性 stroke 图标，24×24、stroke-width 2，风格统一、覆盖面最广
+- 1500+（2026-10-04 实测 1866）线性 stroke 图标，24×24、stroke-width 2，风格统一、覆盖面最广
 - Feather Icons 的社区继任者（feather 已停更，新项目一律用 lucide）
 - shadcn/ui 默认图标库；React/Vue/Svelte/Angular/Solid/Preact 全家桶
 - ISC 许可（早期 MIT，现行 ISC，均可商用）

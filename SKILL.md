@@ -58,7 +58,7 @@ python3 {SKILL_DIR}/scripts/xizhi.py search --set harmonyos --query 铃铛    # 
 python3 {SKILL_DIR}/scripts/xizhi.py describe --set material-symbols        # 套件通道/变体详情
 ```
 
-- lucide 支持名称+tag 双匹配（搜 `home` 能命中已更名的 `house`，输出 `matched as` 注明实际名）
+- lucide 支持名称+tag 双匹配（旧名作为 tag 保留：搜 `home` 经 tag=home 命中 `house` 等图标；`matched as` 行标注首个 tag 命中名——实测为 birdhouse，fetch 用该实际名）
 - harmonyos 双源：在线官方目录（579 图标，含中文名/unicode）+ 离线 SDK 清单（2761 名称），无网可用
 - 同义词组自动扩展：搜 `铃铛`/`鈴鐺` 能命中 `bell`（简繁/中英别称，确定性查表，套件内作用域绝不跨套件改名）
 - 搜不到 → 看输出的**近似名候选**（可直接 fetch）与**直链核验**；仍无则换套件，不要硬编名字
@@ -115,7 +115,7 @@ python3 {SKILL_DIR}/scripts/xizhi.py sync --framework react --set lucide --name 
 | `harmonyos` SVG 报"需要 fontTools" | 一次性 `pip install fonttools`；或 `--name HMSymbol.ttf` 直下字体 |
 | search 无结果 | 看输出的近似名候选；同义词/中文重试（鸿蒙支持中文名）；仍无则该套件没有此图标，换套件 |
 | iconify 在线失败 | 自动降级项目内 `@iconify-json/<prefix>` 本地包；未装则提示 `npm i -D` 引导 |
-| 脚本不可用 | 降级：按 references 里固化的 URL 模板直接 curl（规则23） |
+| 脚本不可用 | 降级：按 references 里固化的 URL 模板直接 curl（规则5） |
 
 ## 内容安全（供应链边界）
 

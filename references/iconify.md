@@ -5,7 +5,7 @@
 ## API（全部实测 200，公开免鉴权）
 
 ```bash
-# 跨库搜索（响应 icons 列表 + collections 许可元数据，本 skill 会自动展示）
+# 跨库搜索（输出图标列表；当前版本许可列显示 ?，许可以各套件官方仓库为准）
 python3 {SKILL_DIR}/scripts/xizhi.py search --set iconify --query flame --limit 20
 
 # 按 prefix:icon 下载 SVG
@@ -21,7 +21,7 @@ python3 {SKILL_DIR}/scripts/xizhi.py fetch --set iconify --name lucide:house,luc
 
 - 搜索：`https://api.iconify.design/search?query=<词>&limit=<N>`（**只支持英文关键词**）
 - 下载：`https://api.iconify.design/<prefix>/<icon>.svg`（单个）；批量 `https://api.iconify.design/<prefix>.json?icons=a,b,c`（返回 icons/aliases JSON，由 xizhi 组装 SVG 并解包 `home→house` 类别名，不解包会直接 miss）
-- 元数据：`https://api.iconify.design/collections?prefixes=<a,b,c>` → license.title/spdx
+- 元数据：`https://api.iconify.design/collections?prefixes=<a,b,c>`（响应顶层直接按 prefix 作键，各 prefix 下含 license.title/spdx）
 
 ## 批量与离线降级
 
